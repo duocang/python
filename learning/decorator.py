@@ -1,6 +1,6 @@
 import logging
 # 装饰器
-
+# https://foofish.net/python-decorator.html
 # 本质上，decorator就是一一个返回函数的高阶函数。
 def use_logging(func):
 
