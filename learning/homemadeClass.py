@@ -28,11 +28,26 @@ class Fib(object):
         return self.a # 返回下一个值
 
     def __getitem__(self, n):
-	    a, b = 1, 1
-	    for x in range(n):
-		    a, b = b, a + b
-	    return a
+	    if isinstance(n, int):  # n是索引
+		    a, b = 1, 1
+		    for x in range(n):
+			    a, b = b, a + b
+		    return a
+	    if isinstance(n, slice):  # n是切片
+		    start = n.start
+		    stop = n.stop
+		    if start is None:
+			    start = 0
+		    a, b = 1, 1
+		    L = []
+		    for x in range(stop):
+			    if x >= start:
+				    L.append(a)
+			    a, b = b, a + b
+		    return L
+
 f = Fib()
 for n in f:
 	print(n)
 f[0]
+f[0:5]
