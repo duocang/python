@@ -51,3 +51,70 @@ for n in f:
 	print(n)
 f[0]
 f[0:5]
+
+class Chain(object):
+
+    def __init__(self, path=''):
+        self._path = path
+
+    def __getattr__(self, path):
+        return Chain('%s/%s' % (self._path, path))
+
+    def __str__(self):
+        return self._path
+
+    __repr__ = __str__
+
+Chain().status.user.timeline.list
+
+class Chain(object):
+    def __init__(self, path=''):
+        self._path = path
+
+    def __getattr__(self, path):
+        if path == 'users':
+	        # Chain().users返回的是一个函数,函数参数是一个str,函数本身又可以返回一个Chain对象。
+	        # 其他调用Chain属性情况均返回一个Chain对象
+            return lambda name: Chain('%s/%s' % (self._path, name))
+        else:
+            return Chain('%s/%s'%(self._path, path))
+
+    def __str__(self):
+        return self._path
+
+    __repr__ = __str__
+
+print(Chain().users('wang'))
+
+# 上面那个代码不够健壮，如果遇到
+# Chain().users('michael').group('student').repos
+# 就无法处理，需要在getattr函数中添加逻辑代码。
+class Chain(object):
+
+    def __init__(self, path='GET '):
+        self._path = path
+
+    def __getattr__(self, path):
+        return Chain('%s/%s' % (self._path, path))
+
+	# 对实例进行直接调用就好比对一个函数进行调用一样，
+    # 所以你完全可以把对象看成函数，把函数看成对象，
+    # 因为这两者之间本来就没啥根本的区别。
+    def __call__(self, path):
+        return Chain('%s/%s' % (self._path, path))
+
+    def __str__(self):
+        return self._path
+
+    __repr__ = __str__
+
+print(Chain().users('wang').name('xuesong'))
+
+class Student(object):
+    def __init__(self, name):
+	    self.name = name
+    def __call__(self):
+	    print('My name is %s.' % self.name)
+s = Student('Michael')
+s() # self参数不要传入
+# My name is Michael.
