@@ -1,5 +1,5 @@
 import os
-from multiprocessing import Process
+from multiprocessin import Process
 
 print('Process (%s) start...' % os.getpid())
 
@@ -12,7 +12,7 @@ else:
     print('I (%s) just created a child process (%s).' % (os.getpid(), pid))
 
 import os
-from multiprocessing import Process
+from multiprocessin import Process
 
 # 子进程要执行的代码
 def run_proc(name):
@@ -28,7 +28,7 @@ if __name__=='__main__':
     print('Child process end.')
 
 # 如果要启动大量的子进程，可以用进程池的方式批量创建子进程
-from multiprocessing import Pool
+from multiprocessin import Pool
 import os, time, random
 
 def long_time_task(name):
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     print('Exit code:', r)
 
 # 以Queue为例，在父进程中创建两个子进程，一个往Queue里写数据，一个从Queue里读数据
-from multiprocessing import Process, Queue
+from multiprocessin import Process, Queue
 import os, time, random
 # 写数据进程执行的代码:
 def write(q):
