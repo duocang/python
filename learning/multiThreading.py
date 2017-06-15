@@ -1,5 +1,5 @@
 import time,threading
-
+from queue import Queue
 # 新线程执行的代码
 # 任何进程默认就会启动一个线程，称为主线程
 def loop():
@@ -98,3 +98,28 @@ print ("退出主线程")
 # 2 多线程多join的情况下，依次执行各线程的join方法，前头一个结束了才能执行后面一个。
 # 3 无参数，则等待到该线程结束，才开始执行下一个线程的join。
 # 4 设置参数后，则等待该线程这么长时间就不管它了（而该线程并没有结束）。不管的意思就是可以执行后面的主进程了
+import threading
+import time
+from queue import Queue
+def job(l,q):
+    for i in range(len(l)):
+        l[i] = l[i]**2
+    q.put(l)
+
+def multithreading():
+    q = Queue()
+    threads = []
+    data = [[1,2,3],[3,4,5],[4,4,4],[5,5,5]]
+    for i in range(4):
+        t = threading.Thread(target=job, args=(data[i], q))
+        t.start()
+        threads.append(t)
+    for thread in threads:
+        thread.join()
+    results = []
+    for _ in range(4):
+          results.append(q.get())
+    print(results)
+
+if __name__ == '__main__':
+    multithreading()
