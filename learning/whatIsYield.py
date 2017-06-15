@@ -48,3 +48,38 @@ for i in mygenerator:
 #           魔法
 # 当一个生成器函数调用yield时，生成器函数的状态会被冻结，所有的变量的值都会被保存下来，下一行要执行代码的位置也会被记录下来，
 # 直到下一次调用next()。一旦next()再次被调用，生成器函数会从上一次离开的地方开始。如果永远不调用，yield保存的状态会被无视。
+
+def double_inputs():
+    while True:
+        x = yield
+        yield x * 2
+gen = double_inputs()
+next(gen)      # run up to the first yield
+# It's used to send values into a generator that just yielded.
+gen.send(10)    # goes into 'x' variable
+# 20
+gen.__next__      # run up to the next yield
+gen.send(6)     # goes into 'x' again
+# 12
+gen.__next__     # run up to the next yield
+gen.send(94.3)  # goes into 'x' again
+# 188.5999999999999
+# g.next() has been renamed to g.__next__(). The reason for this is to have
+# consistence. Special methods like __init__() and __del__ all have double
+# underscores (or "dunder" as it is getting popular to call them now), and .next()
+# is one of the few exceptions to that rule. Python 3.0 fixes that. [*]
+
+
+# But instead of calling g.__next__(), as Paolo says, use next(g).
+
+
+# Think of it like this, with a generator and no send, it's a one way street
+# ==========       yield      ========
+# Generator |   ------------> | User |
+# ==========                  ========
+
+# But with send, it becomes a two way street
+# ==========       yield       ========
+# Generator |   ------------>  | User |
+# ==========    <------------  ========
+#                  send
