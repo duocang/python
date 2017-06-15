@@ -1,3 +1,10 @@
+
+import asyncio
+import time
+from datetime import datetime
+# 协程是运行在单线程当中的并发
+# 协程相比线程的一大优势就是省去了多线程之间的切换开销
+
 def consumer():
     r = ''
     while True:
@@ -28,3 +35,65 @@ produce(c)
 # 4. produce拿到consumer处理的结果，继续生产吓一跳消息
 # 5. produce决定不生产了，通过c.close()关闭consumer，整个过程结束。
 # 整个流程无锁，由一个线程执行，produce和consumer协作完成任务，所以称为“协程”，而非线程的抢占式多任务。
+
+# 使用同步 sleep 方法的代码
+async def custom_sleep():
+    print('SLEEP', datetime.now())
+    time.sleep(1)
+
+async def factorial(name, number):
+    f = 1
+    for i in range(2, number+1):
+        print('Task {}: Compute factorial({})'.format(name, i))
+        await custom_sleep()
+        f *= i
+    print('Task {}: factorial({}) is {}\n'.format(name, number, f))
+
+
+start = time.time()
+loop = asyncio.get_event_loop()
+
+tasks = [
+    asyncio.ensure_future(factorial("A", 3)),
+    asyncio.ensure_future(factorial("B", 4)),
+]
+loop.run_until_complete(asyncio.wait(tasks))
+loop.close()
+
+end = time.time()
+print("Total time: {}".format(end - start))
+
+# 使用异步 Sleep  的代码：
+
+import asyncio
+import time
+from datetime import datetime
+
+
+async def custom_sleep():
+    print('SLEEP {}\n'.format(datetime.now()))
+    # 当使用异步模式的时候（每次调用  await asyncio.sleep(1) ），进程控制权会返回到主程序的消息循环里，
+    # 并开始运行队列的其他任务（任务Ａ或者任务Ｂ）。
+    await asyncio.sleep(1)
+
+async def factorial(name, number):
+    f = 1
+    for i in range(2, number+1):
+        print('Task {}: Compute factorial({})'.format(name, i))
+        await custom_sleep()
+        f *= i
+    print('Task {}: factorial({}) is {}\n'.format(name, number, f))
+
+
+start = time.time()
+loop = asyncio.get_event_loop()
+
+tasks = [
+    asyncio.ensure_future(factorial("A", 3)),
+    asyncio.ensure_future(factorial("B", 4)),
+]
+loop.run_until_complete(asyncio.wait(tasks))
+loop.close()
+
+end = time.time()
+print("Total time: {}".format(end - start))
