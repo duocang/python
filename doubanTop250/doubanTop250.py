@@ -2,6 +2,8 @@
 import urllib.request
 import ssl
 from lxml import etree
+from time import time
+import requests
 
 url = 'https://movie.douban.com/top250'
 context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
@@ -40,12 +42,18 @@ def parse(url):
         title = movie.find(xpath_title).text
         print(i, title)
 
-
 def main():
-    parse(url)
+    start = time()
+    parse(2,url)
+    end = time()
+    print('Cost {} seconds'.format((end - start) / 5))
+
 
 if __name__ == '__main__':
+
     main()
+
+
 # ssl: SSL stands for Secure Sockets Layer and is designed to
 # create secure connection between client and server.
 
@@ -56,3 +64,4 @@ if __name__ == '__main__':
 # .	选取当前节点。
 # .. 选取当前节点的父节点。
 # @	选取属性# 。
+
