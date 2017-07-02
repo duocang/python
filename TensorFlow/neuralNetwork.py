@@ -81,3 +81,6 @@ for i in range(1000):
         lines = ax.plot(x_data, predition_value, 'r-', lw=5)
         plt.pause(0.3)
 
+
+# how to run the code
+# tensorboard --logdir="logs"
