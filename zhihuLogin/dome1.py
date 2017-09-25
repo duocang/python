@@ -52,6 +52,7 @@ def login(email, password):
     }
     response = session.post(login_url, data=data, headers=headers)
     login_code = response.json()
+    print(login_code)
     print(login_code['msg'])
     for i in session.cookies:
         print(i)

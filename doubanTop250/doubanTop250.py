@@ -46,7 +46,7 @@ def main():
     start = time()
     parse(2,url)
     end = time()
-    print('Cost {} seconds'.format((end - start) / 5))
+    print('Cost {} seconds'.format((end - start)))
 
 
 if __name__ == '__main__':
@@ -64,4 +64,7 @@ if __name__ == '__main__':
 # .	选取当前节点。
 # .. 选取当前节点的父节点。
 # @	选取属性# 。
+
+
+
 

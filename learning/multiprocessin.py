@@ -12,7 +12,7 @@ else:
     print('I (%s) just created a child process (%s).' % (os.getpid(), pid))
 
 import os
-from multiprocessin import Process
+from multiprocessing import Process
 
 # 子进程要执行的代码
 def run_proc(name):
@@ -28,7 +28,7 @@ if __name__=='__main__':
     print('Child process end.')
 
 # 如果要启动大量的子进程，可以用进程池的方式批量创建子进程
-from multiprocessin import Pool
+from multiprocessing import Pool
 import os, time, random
 
 def long_time_task(name):

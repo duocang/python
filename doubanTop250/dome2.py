@@ -42,6 +42,6 @@ def main():
     start = time()
     parse(url)
     end = time()
-    print ('Cost {} seconds'.format((end - start) / 5))
+    print ('Cost {} seconds'.format((end - start)))
 if __name__ == '__main__':
     main()

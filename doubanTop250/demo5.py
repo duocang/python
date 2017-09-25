@@ -1,5 +1,5 @@
 import requests
-from xml import etree
+from lxml import etree
 from time import time
 from concurrent.futures import ProcessPoolExecutor
 
