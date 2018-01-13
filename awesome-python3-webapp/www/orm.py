@@ -26,10 +26,11 @@ web框架使用了基于asyncio的aiohttp，这是基于协程的异步模型。
 缺省情况下将编码设置为utf8，自动提交事务
 '''
 async def create_pool(loop, **kw):
+    print('create database connection pool...')
     logging.info('create database connection pool...')
-    global __pool   # 连接池由全局变量__pool存储，
+    global __pool
     __pool = await aiomysql.create_pool(
-        host=kw.get('host', 'localhost'),   # MySQL数据库的配置从关键字参数中获取
+        host=kw.get('host', 'localhost'),
         port=kw.get('port', 3306),
         user=kw['user'],
         password=kw['password'],
@@ -40,7 +41,13 @@ async def create_pool(loop, **kw):
         minsize=kw.get('minsize', 1),
         loop=loop
     ) # 创建连接所需要的参数
+    print("connection is done")
 
+async def destory_pool():
+    global pool
+    if pool is not None :
+        pool.close()
+        await pool.wait_closed()
 
 
 # 用于输出元类中创建sql_insert语句中的占位符
@@ -86,7 +93,7 @@ yield from将调用一个子协程（也就是在一个协程中调用另一个�
 '''
 async def select(sql, args, size=None):
     log(sql, args)
-    global __pool
+    #global __pool
     async with __pool.get() as conn:
         # #获取一个cursor，通过aiomysql.DictCursor获取到的cursor在返回结果时会返回一个字典格式
         async with conn.cursor(aiomysql.DictCursor) as cur: # aiomysql.DictCursor  # create dict cursor
@@ -194,7 +201,7 @@ class Model(dict, metaclass = ModelMetaclass):
         try:
             return self[key]
         except KeyError:
-            raise AttributeError(r"'Mode' object has no attribute '%s'" % key)
+            raise AttributeError(r"'Model' object has no attribute '%s'" % key)
 
     def __setattr__(self, key, value):
         self[key] = value
@@ -203,17 +210,23 @@ class Model(dict, metaclass = ModelMetaclass):
         return getattr(self, key, None) # 直接调回内置函数，注意此处没有下划线，Node的用处是在当User没有赋值数据时返回None，用于调用update
 
     def getValueOrDefault(self, key):
-        value = getattr(self, key, None) # 第三个参数NOne，可以在没有返回值时，返回None，用于save
+        print("打印key")
+        print(key)
+        value = getattr(self, key, None) # 第三个参数None，可以在没有返回值时，返回None，用于save
+        print("打印value：")
+        print(value)
         if value is None:
             field = self.__mappings__[key]
+            print("打印field")
+            print(field)
             if field.default is not None:
                 value = field.default() if callable(field.default) else field.default
                 logging.debug('using default value for %s: %s' % (key, str(value)))
                 setattr(self, key, value)
-            return value
+        return value
 
     @classmethod
-    async def findall(cls, where=None, args=None, **kw):
+    async def findAll(cls, where=None, args=None, **kw):
         sql = [cls.__select__]
         if where:
             sql.append("where")
@@ -237,30 +250,47 @@ class Model(dict, metaclass = ModelMetaclass):
                 raise ValueError('Invalid limit value: %s' % str(limit))
         rs = await select(' '.join(sql), args)
 
-        @classmethod
-        async def find(cls, primarykey):
-            sql = '%s where `%s`=?' % (cls.__select__, cls.__primary_key__)
-            rs = await select(sql, [primarykey], 1)
-            if len(rs) == 0:
-                return None
-            return rs[0]['__num__']
+    @classmethod
+    async def findNumber(cls, selectField, where=None, args=None):
+        ' find number by select and where. '
+        sql = ['select %s _num_ from `%s`' %(selectField, cls.__table__)]
+        if where:
+            sql.append('where')
+            sql.append(where)
+        rs = await select(' '.join(sql), args, 1)
+        if len(rs) == 0:
+            return None
+        return rs[0]['_num_']
 
-        async def save(self):
-            args = list(map(self.getValueOrDefault, self.__fields__))
-            args.append(self.getValueOrDefault(self.__primary_key__))
-            rows = await execute(self.__insert__, args)
-            if rows != 1:
-                logging.warn('failed to insert record: affected rows: %s' % rows)
+    @classmethod
+    async def find(cls, primarykey):
+        sql = '%s where `%s`=?' % (cls.__select__, cls.__primary_key__)
+        rs = await select(sql, [primarykey], 1)
+        if len(rs) == 0:
+            return None
+        return rs[0]['__num__']
 
-        async def update(self):
-            args = list(map(self.getValue, self.__fields__))
-            args.append(self.getValue(self.__primary_key__))
-            rows = await execute(self.__update__, args)
-            if rows != 1:
-                logging.warn('failed to insert record: affected rows: %s' % rows)
+    async def save(self):
+        print("下面打印的是save中的self")
+        print(self)
+        print("下面打印self的__fields__")
+        print(self.__fields__)
+        args = list(map(self.getValueOrDefault, self.__fields__))
+        print(args)
+        args.append(self.getValueOrDefault(self.__primary_key__))
+        rows = await execute(self.__insert__, args)
+        if rows != 1:
+            logging.warning('failed to insert record: affected rows: %s' % rows)
 
-        async def remove(self):
-            args = [self.getValue(self.__primary_key__)] # 此处不能使用list()-->'int' object is not iterable
-            rows = await execute(self.__delete__, args)
-            if rows != 1:
-                logging.warn('faild to remove by primary key: affected rows: %s' % rows)
+    async def update(self):
+        args = list(map(self.getValue, self.__fields__))
+        args.append(self.getValue(self.__primary_key__))
+        rows = await execute(self.__update__, args)
+        if rows != 1:
+            logging.warn('failed to insert record: affected rows: %s' % rows)
+
+    async def remove(self):
+        args = [self.getValue(self.__primary_key__)] # 此处不能使用list()-->'int' object is not iterable
+        rows = await execute(self.__delete__, args)
+        if rows != 1:
+            logging.warn('faild to remove by primary key: affected rows: %s' % rows)
