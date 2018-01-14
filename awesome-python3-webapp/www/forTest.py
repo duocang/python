@@ -13,7 +13,7 @@ loop = asyncio.get_event_loop()
 async def test():
     await www.orm.create_pool(loop = loop,host='localhost', port=3306, user='www-data', password='www-data', db='awesome')
 
-    u = www.models.User(name='Test', email='tes8t@example.com', passwd='1234567890', image='about:blank', id = '123')
+    u = www.models.User(name='Test', email='tes8t1@example.com', passwd='1234567890', image='about:blank', id = '1234')
 
     await u.save()
 

@@ -210,15 +210,9 @@ class Model(dict, metaclass = ModelMetaclass):
         return getattr(self, key, None) # 直接调回内置函数，注意此处没有下划线，Node的用处是在当User没有赋值数据时返回None，用于调用update
 
     def getValueOrDefault(self, key):
-        print("打印key")
-        print(key)
         value = getattr(self, key, None) # 第三个参数None，可以在没有返回值时，返回None，用于save
-        print("打印value：")
-        print(value)
         if value is None:
             field = self.__mappings__[key]
-            print("打印field")
-            print(field)
             if field.default is not None:
                 value = field.default() if callable(field.default) else field.default
                 logging.debug('using default value for %s: %s' % (key, str(value)))
@@ -271,10 +265,6 @@ class Model(dict, metaclass = ModelMetaclass):
         return rs[0]['__num__']
 
     async def save(self):
-        print("下面打印的是save中的self")
-        print(self)
-        print("下面打印self的__fields__")
-        print(self.__fields__)
         args = list(map(self.getValueOrDefault, self.__fields__))
         print(args)
         args.append(self.getValueOrDefault(self.__primary_key__))
